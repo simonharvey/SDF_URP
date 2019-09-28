@@ -8,7 +8,8 @@ public class SDFEditor : ScriptableWizard
 {
 	private const string MenuPath = "Assets/Bake SDF";
 
-	public int Size = 0;
+	[Range(0, 64)]
+	public int MaxIter = 64;
 	private Texture2D _texture;
 
 	[MenuItem(MenuPath)]
@@ -24,23 +25,41 @@ public class SDFEditor : ScriptableWizard
 		return Selection.activeObject.GetType() == typeof(Texture2D);
 	}
 
-	private void OnWizardCreate()
+	public static void SaveRTToFile(RenderTexture rt, string path)
 	{
-		var rt = SDF.Bake(_texture, Size);//RenderTexture.GetTemporary(_texture.width, _texture.height);
-		//Graphics.Blit(_texture, rt);
-		var tex = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
-		RenderTexture.active = rt;
-		tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-		RenderTexture.ReleaseTemporary(rt);
+		//RenderTexture rt = Selection.activeObject as RenderTexture;
 
-		var bytes = tex.EncodeToPNG();
-		var path = AssetDatabase.GetAssetPath(_texture);
-		var sdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)) + "-SDF.png";
-		File.WriteAllBytes(sdfPath, bytes);
-		AssetDatabase.Refresh();
-		var asset = ((TextureImporter)AssetImporter.GetAtPath(sdfPath));
+		RenderTexture.active = rt;
+		Texture2D tex = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
+		tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+		RenderTexture.active = null;
+
+		byte[] bytes;
+		bytes = tex.EncodeToPNG();
+
+		//string path = AssetDatabase.GetAssetPath(rt) + ".png";
+		System.IO.File.WriteAllBytes(path, bytes);
+		AssetDatabase.ImportAsset(path);
+
+		var asset = (TextureImporter)AssetImporter.GetAtPath(path);
 		asset.textureType = TextureImporterType.Default;
 		asset.compressionQuality = 100;
+
+		AssetDatabase.ImportAsset(path);
+		Debug.Log("Saved to " + path);
+	}
+
+	private void OnWizardCreate()
+	{
+		SDF.MaxIter = MaxIter;
+		var rt = SDF.Bake(_texture);
+
+		var path = AssetDatabase.GetAssetPath(_texture);
+		var sdfPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)) + "-SDF.png";
+
+		SaveRTToFile(rt, sdfPath);
+
+		RenderTexture.ReleaseTemporary(rt);
 	}
 
 	private void OnWizardOtherButton()

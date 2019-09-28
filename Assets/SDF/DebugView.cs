@@ -5,8 +5,6 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class DebugView : MonoBehaviour
 {
-	[Range(0, 512)]
-	public int size = 1;
 	public Texture2D tex;
 	[Range(1, 32)]
 	public int maxIter;
@@ -17,7 +15,7 @@ public class DebugView : MonoBehaviour
 		Graphics.Blit(tex, destination);
 		var i = SDF.MaxIter;
 		SDF.MaxIter = maxIter;
-		var sdf = SDF.Bake(tex, size);
+		var sdf = SDF.Bake(tex);
 		SDF.MaxIter = i;
 		Graphics.Blit(sdf, destination);
 		RenderTexture.ReleaseTemporary(sdf);
