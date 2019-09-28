@@ -108,13 +108,14 @@
 			{
 				float4 v = tex2D(_MainTex, coord);
 				//v.y = 1 - v.y;
-				//if (v.a > 0)
+				if (v.a > 0)
 				{
 					float d = length(origin.xy - v.xy);// *_MainTex_TexelSize.zw) / _MainTex_TexelSize.zw;
-					if (d <= minDist)
+					if (d < minDist)
 					{
 						minDist = d;
 						closestPos.xy = v;
+						closestPos.a = 1;
 						//closestPos.b = d;
 						//closestPos.b = d;
 					}

@@ -107,7 +107,6 @@ public static class SDF
 			var dst = RenderTexture.GetTemporary(output.width, output.height, 0, RenderTextureFormat.ARGBFloat);
 			dst.filterMode = FilterMode.Point;
 			dst.wrapMode = TextureWrapMode.Clamp;
-			
 
 			//var texOff = new Vector2((float)off / output.width, off / (float)output.height);
 			float size = output.width;
