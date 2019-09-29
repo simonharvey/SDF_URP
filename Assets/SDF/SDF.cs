@@ -77,7 +77,7 @@ public static class SDF
 
 		var material = SDFMaterial;
 		
-		Graphics.Blit(tex, src, material, 0);
+		Graphics.Blit(tex, src, material, 1);
 		//RenderTexture.ReleaseTemporary(seed);
 
 		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
@@ -97,7 +97,7 @@ public static class SDF
 			var texOff = new Vector2(off / size, off / size);
 
 			material.SetVector("_Offset", texOff);
-			Graphics.Blit(src, dst, material, 1);
+			Graphics.Blit(src, dst, material, 2);
 			Swap(ref src, ref dst);
 			RenderTexture.ReleaseTemporary(dst);
 			
@@ -105,7 +105,8 @@ public static class SDF
 
 		//Graphics.Blit(b, dst);
 		//material.SetFloat("_SDFSize", size);
-		Graphics.Blit(src, output);
+		material.SetTexture("_SDF", src);
+		Graphics.Blit(tex, output, material, 3);
 
 		RenderTexture.ReleaseTemporary(src);
 	}

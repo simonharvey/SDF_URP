@@ -58,6 +58,72 @@
 
 			ENDCG
 		}
+		Pass
+		{
+			Name "OutlineSeed"
+
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+#pragma multi_compile _ PIXELSNAP_ON
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
+			};
+
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+			};
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = v.uv;
+//#ifdef PIXELSNAP_ON
+//				o.vertex = UnityPixelSnap(o.vertex);
+//#endif
+				return o;
+			}
+
+			sampler2D _MainTex;
+			float4 _MainTex_TexelSize;
+
+			float SampleAlphaCutout(float2 uv)
+			{
+				return step(tex2D(_MainTex, uv).a, 0.001);
+			}
+
+			float4 frag(v2f i) : SV_Target
+			{
+				float4 c = tex2D(_MainTex, i.uv);
+				float centerCut = step(c.a, 0.001);
+				
+				float u =  SampleAlphaCutout(i.uv + float2(0, _MainTex_TexelSize.y));
+				float d =  SampleAlphaCutout(i.uv - float2(0, _MainTex_TexelSize.y));
+				float r =  SampleAlphaCutout(i.uv + float2(_MainTex_TexelSize.x, 0));
+				float l =  SampleAlphaCutout(i.uv - float2(_MainTex_TexelSize.x, 0));
+
+				float kernel =  (u*d*r*l) + centerCut;
+				float o = kernel == 1;
+				
+				//if (col == 0) o = 0;
+				float inside = 1.0 - step(c.a, 0);
+				//return float4(o, o, 0, c.a);
+				//c.y = 1 - c.y; // what the fuck is that?
+				return float4(i.uv.xy * o, o, o);
+
+				//return float4(c.rg * o, inside, o);
+				//return float4(i.pos, col, o * col);
+			}
+
+			ENDCG
+		}
 
 		Pass
 		{
@@ -156,6 +222,64 @@
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+			};
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = v.uv;
+				return o;
+			}
+
+			sampler2D _MainTex;	
+			float4 _MainTex_TexelSize;
+			sampler2D _SDF;
+
+			float4 frag(v2f i) : SV_Target
+			{
+				float inside = step(0.001, tex2D(_MainTex, i.uv).a);
+				float4 res = tex2D(_SDF, i.uv);
+				//res.b += .5;
+				if (inside)
+				{
+					res.b *= -1;
+					//res.b = 1 + res.b;
+				}
+
+				res.b = res.b * .5 + .5;
+
+				/*res.b *= .5;
+				if (inside)
+				{
+					res.b = res.b * -1 + .5; 
+				}*/
+				return res;
+			}
+
+			ENDCG
+		}
+
+		/*Pass
+		{
+			Name "SDF"
+
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
+			};
+
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
 				float2 pos : TEXCOORD1;
 				float4 vertex : SV_POSITION;
 			};
@@ -171,6 +295,7 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_TexelSize;
+			//sampler2D _
 			float _SDFSize;
 
 			float4 frag(v2f i) : SV_Target
@@ -188,6 +313,6 @@
 				return float4(off * .5 + .5, 0, 1);// *_MainTex_TexelSize.zw / _MainTex_TexelSize.zw), 1);
 			}
 			ENDCG
-		}
+		}*/
 	}
 }
