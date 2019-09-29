@@ -108,6 +108,7 @@
 						minDist = d;
 						closestPos.xy = v;
 						closestPos.a = 1;
+						closestPos.b = d;
 					}
 				}
 			}

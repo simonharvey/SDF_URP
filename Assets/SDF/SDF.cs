@@ -71,16 +71,14 @@ public static class SDF
 
 	public static void BakeRT(Texture tex, RenderTexture output)
 	{
-		var seed = RenderTexture.GetTemporary(output.width, output.height, 0, RenderTextureFormat.ARGB32);
 		var src = RenderTexture.GetTemporary(output.width, output.height, 0, RenderTextureFormat.ARGB32);
-		seed.filterMode = src.filterMode = FilterMode.Point;
-		seed.wrapMode = src.wrapMode = TextureWrapMode.Clamp;
+		//seed.filterMode = src.filterMode = FilterMode.Point;
+		//seed.wrapMode = src.wrapMode = TextureWrapMode.Clamp;
 
 		var material = SDFMaterial;
 		
-		Graphics.Blit(tex, seed, material, 0);
-		Graphics.Blit(seed, src);//, material, 1);
-		RenderTexture.ReleaseTemporary(seed);
+		Graphics.Blit(tex, src, material, 0);
+		//RenderTexture.ReleaseTemporary(seed);
 
 		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
 		//off >>= 1;
