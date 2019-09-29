@@ -40,13 +40,9 @@
 			v2f vert(appdata_base v)
 			{
 				v2f o;
-				//o.vertex = mul(_Mat, UnityObjectToClipPos(v.vertex));
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				
 				o.uv = float4(v.texcoord.xy, 0, 0);
-				//o.pos = v.texcoord.xy;
-				/*o.pos = o.vertex * .5 + .5;
-				o.pos.y = 1 - o.pos.y;*/
 				return o;
 			}
 
@@ -55,11 +51,9 @@
 				float c = tex2D(_MainTex, i.uv).a;
 				float inside = 1.0 - step(c, 0.01);
 				float4 res;
-				res.xy = i.uv * inside;
-				//res.xy = float2(.5, .5);
+				res.xy = i.uv;// * inside;
 				res.z = res.w = inside;
 				return res;
-				//return float4(i.uv, inside, inside);
 			}
 
 			ENDCG
@@ -95,8 +89,6 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = v.uv;
-				//o.uv = mul(_Mat, v.uv);
-				//o.uv.y = 1 - o.uv.y;
 				return o;
 			}
 
@@ -116,8 +108,6 @@
 						minDist = d;
 						closestPos.xy = v;
 						closestPos.a = 1;
-						//closestPos.b = d;
-						//closestPos.b = d;
 					}
 				}
 			}
@@ -127,21 +117,17 @@
 				float2 origin = i.uv;
 				//float4 closestPos = float4(0, 0, 0, 0);
 				float4 closestPos = tex2D(_MainTex, origin);
-				float minDist = 100000000000.0;
+				float minDist = 1000.0;
 
-				Flood(origin, origin, closestPos, minDist);
-				// +
-				Flood(origin, origin + _Offset * float2(-1.0,  0.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(1.0,  0.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(0.0,  1.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(0.0, -1.0), closestPos, minDist);
-				// x
-				Flood(origin, origin + _Offset * float2(-1.0, -1.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(1.0, -1.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(-1.0,  1.0), closestPos, minDist);
-				Flood(origin, origin + _Offset * float2(1.0,  1.0), closestPos, minDist);
+				for (int y=-1; y<=1; ++y)
+				{
+					for (int x=-1; x<=1; ++x)
+					{
+						Flood(origin, origin + _Offset * float2(x, y), closestPos, minDist);
+					}
+				}
 
-				float4 c = tex2D(_MainTex, origin);
+				//float4 c = tex2D(_MainTex, origin);
 				//closestPos.b = c.b;
 				//closestPos.a = c.a;
 				return closestPos;

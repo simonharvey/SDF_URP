@@ -21,10 +21,11 @@ public static class SDF
 
 	static Material s_Mat = null;
 
-	private static Material SDFMaterial {
+	private static Material SDFMaterial
+	{
 		get
 		{
-			if (s_Mat == null)
+			//if (s_Mat == null)
 			{
 				s_Mat = new Material(Shader.Find("SDF"));
 			}
@@ -36,12 +37,12 @@ public static class SDF
 	public static CommandBuffer BakeCommandBuffer(Texture tex, RenderTexture output, int size)
 	{
 		CommandBuffer buf = new CommandBuffer();
-		/*buf.name = "SDF (" + output + ")";
+		buf.name = "SDF (" + output + ")";
 		buf.BeginSample(buf.name);
 		var mat = SDFMaterial;
 
-		var scale = new Vector2(tex.width/(float)(tex.width+size), tex.height/(float)(tex.height+size));
-		buf.SetGlobalMatrix("_Mat", Matrix4x4.Scale(scale));
+		//var scale = new Vector2(tex.width/(float)(tex.width+size), tex.height/(float)(tex.height+size));
+		//buf.SetGlobalMatrix("_Mat", Matrix4x4.Scale(scale));
 		var src = 123;
 		var dst = 234;
 		buf.GetTemporaryRT(src, output.descriptor);
@@ -51,19 +52,20 @@ public static class SDF
 		buf.Blit(tex, src, mat, 0);
 
 		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
+		//Debug.Log($"off: {off}");
 		while (off > 0)
 		{
 			off >>= 1;
 			var texOff = new Vector2((float)off / output.width, off / (float)output.height);
 			buf.SetGlobalVector("_Offset", texOff);
-			buf.Blit(src, dst, mat, 2);
+			buf.Blit(src, dst, mat, 1);
 			Swap(ref src, ref dst);
 		}
 
-		buf.Blit(dst, output);
+		buf.Blit(src, output);
 		buf.ReleaseTemporaryRT(src);
 		buf.ReleaseTemporaryRT(dst);
-		buf.EndSample(buf.name);*/
+		buf.EndSample(buf.name);
 		return buf;
 	}
 
@@ -73,32 +75,15 @@ public static class SDF
 		var src = RenderTexture.GetTemporary(output.width, output.height, 0, RenderTextureFormat.ARGB32);
 		seed.filterMode = src.filterMode = FilterMode.Point;
 		seed.wrapMode = src.wrapMode = TextureWrapMode.Clamp;
-		/*RenderTexture.active = seed;
-		GL.Clear(true, true, Color.clear);
-		RenderTexture.active = null;*/
 
-		//if (s_Mat == null)
-		{
-			s_Mat = new Material(Shader.Find("SDF"));
-			Debug.Log(s_Mat);
-		}
-
-		// seeding
-		//var scale = new Vector2((float)tex.width / output.width, (float)tex.height / output.height);
-		//var mat = Matrix4x4.Scale(scale);
-		var material = s_Mat;
-		//material.SetMatrix("_Mat", mat);
-		//material.SetVector("_Dst_TexelSize", new Vector2(1.0f / output.width, 1.0f / tex.width));
-
-		/*Graphics.Blit(tex, output, material, 0);
-		return;*/
-
+		var material = SDFMaterial;
+		
 		Graphics.Blit(tex, seed, material, 0);
 		Graphics.Blit(seed, src);//, material, 1);
 		RenderTexture.ReleaseTemporary(seed);
 
 		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
-		//off >>= 2;
+		//off >>= 1;
 
 		int iter = 0;
 		while (off > 0)
@@ -109,6 +94,7 @@ public static class SDF
 			dst.wrapMode = TextureWrapMode.Clamp;
 
 			//var texOff = new Vector2((float)off / output.width, off / (float)output.height);
+			off >>= 1;
 			float size = output.width;
 			var texOff = new Vector2(off / size, off / size);
 
@@ -116,7 +102,7 @@ public static class SDF
 			Graphics.Blit(src, dst, material, 1);
 			Swap(ref src, ref dst);
 			RenderTexture.ReleaseTemporary(dst);
-			off >>= 1;
+			
 		}
 
 		//Graphics.Blit(b, dst);

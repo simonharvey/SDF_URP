@@ -962,7 +962,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1824,13 +1824,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2059040877}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.84, z: -2.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2059040881
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1869,9 +1869,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2059040877}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8a4f730e9d3dd41adceeb1bbb8c8c8, type: 3}
+  m_Script: {fileID: 11500000, guid: 7d881afb8e9f99947a7d5d86ff18b565, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 1
-  tex: {fileID: 2800000, guid: 2e0889de94c83454fae0a3a098619a76, type: 3}
-  maxIter: 0
+  LayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  _output: {fileID: 8400000, guid: 05a6bf9551610cd48893589a9adc3d33, type: 2}
+  _solidShader: {fileID: 4800000, guid: d7625fc4d35800e46bc8bfdc60aafd53, type: 3}
+  Distance: 10

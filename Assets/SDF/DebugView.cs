@@ -11,6 +11,7 @@ public class DebugView : MonoBehaviour
 
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
+		/*Debug.Log("here");
 		Graphics.Blit(source, destination);
 		Graphics.Blit(tex, destination);
 		var i = SDF.MaxIter;
@@ -18,6 +19,6 @@ public class DebugView : MonoBehaviour
 		var sdf = SDF.Bake(tex);
 		SDF.MaxIter = i;
 		Graphics.Blit(sdf, destination);
-		RenderTexture.ReleaseTemporary(sdf);
+		RenderTexture.ReleaseTemporary(sdf);*/
 	}
 }
