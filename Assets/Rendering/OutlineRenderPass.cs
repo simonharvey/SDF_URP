@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.LWRP;
 using UnityEngine.Rendering.Universal;
 
 //https://pastebin.com/u69vkZjU
@@ -27,8 +28,11 @@ public class OutlineRenderPass : ScriptableRendererFeature
         // The render pipeline will ensure target setup and clearing happens in an performance manner.
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-			m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, -1);
-			//ConfigureTarget(_host.RT);
+			//Debug.Log($"Configure {this}");
+			m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, _host.LayerMask);
+			cmd.GetTemporaryRT(123, cameraTextureDescriptor.width, cameraTextureDescriptor.height, 0);
+			ConfigureClear(ClearFlag.Color, Color.clear);
+			ConfigureTarget(123);
 		}
 
         // Here you can implement the rendering logic.
@@ -41,31 +45,39 @@ public class OutlineRenderPass : ScriptableRendererFeature
 
 			using (new ProfilingSample(cmd, m_ProfilerTag))
 			{
-				context.ExecuteCommandBuffer(cmd);
-				cmd.Clear();
+				//context.ExecuteCommandBuffer(cmd);
+				//cmd.Clear();
+				var cam = renderingData.cameraData;
+				var w = cam.camera.pixelWidth;
+				var h = cam.camera.pixelHeight;
+				var rtd = renderingData.cameraData.cameraTargetDescriptor;
+				rtd.depthBufferBits = 0;
+				//cmd.GetTemporaryRT(123, rtd);
 
 				var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
 				var drawSettings = CreateDrawingSettings(m_ShaderTagId, ref renderingData, sortFlags);
 				drawSettings.perObjectData = PerObjectData.None;
-
 
 				ref CameraData cameraData = ref renderingData.cameraData;
 				Camera camera = cameraData.camera;
 				if (cameraData.isStereoEnabled)
 					context.StartMultiEye(camera);
 
-
 				var mat = CoreUtils.CreateEngineMaterial("SDF");
+				drawSettings.overrideMaterialPassIndex = mat.FindPass("CamSeed");
 				drawSettings.overrideMaterial = mat;
 
 				context.DrawRenderers(renderingData.cullResults, ref drawSettings,
 					ref m_FilteringSettings);
 
+				cmd.SetGlobalTexture("_MainTex", 123);
 				//cmd.SetGlobalTexture("_CameraDepthNormalsTexture", depthAttachmentHandle.id);
 			}
 
 			context.ExecuteCommandBuffer(cmd);
 			CommandBufferPool.Release(cmd);
+
+			//cmd.Blit(123, null);
 
 			/*//https://github.com/Unity-Technologies/ScriptableRenderPipeline/wiki/SRP-Drawing
 			context.SetupCameraProperties(renderingData.cameraData.camera);
@@ -82,30 +94,39 @@ public class OutlineRenderPass : ScriptableRendererFeature
         /// Cleanup any allocated resources that were created during the execution of this render pass.
         public override void FrameCleanup(CommandBuffer cmd)
         {
-
+			//cmd.Blit(123, 0);
+			cmd.ReleaseTemporaryRT(123);
+			//Debug.Log($"Cleanup {this}");
         }
     }
 
 	public LayerMask LayerMask;
 	public RenderTexture RT;
+	public Material OutlineMat;
 
-    CustomRenderPass m_ScriptablePass;
+    CustomRenderPass _drawTargetsPass;
+	FullScreenQuadPass _fsqPass;
 
-    public override void Create()
+	public override void Create()
     {
-		m_ScriptablePass = new CustomRenderPass(this)
+		_drawTargetsPass = new CustomRenderPass(this)
 		{
-
-			// Configures where the render pass should be injected.
 			renderPassEvent = RenderPassEvent.AfterRenderingOpaques
 		};
+
+		_fsqPass = new FullScreenQuadPass(new FullScreenQuad.FullScreenQuadSettings
+		{
+			material = OutlineMat,
+			renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
+		});
 	}
 
     // Here you can inject one or multiple render passes in the renderer.
     // This method is called when setting up the renderer once per-camera.
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        renderer.EnqueuePass(m_ScriptablePass);
+        renderer.EnqueuePass(_drawTargetsPass);
+		renderer.EnqueuePass(_fsqPass);
     }
 }
 

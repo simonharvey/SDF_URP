@@ -58,6 +58,7 @@
 
 			ENDCG
 		}
+
 		Pass
 		{
 			Name "OutlineSeed"
@@ -256,6 +257,53 @@
 					res.b = res.b * -1 + .5; 
 				}*/
 				return res;
+			}
+
+			ENDCG
+		}
+
+		Pass
+		{
+			Name "CamSeed"
+
+			CGPROGRAM
+
+			#pragma vertex vert
+			#pragma fragment frag
+		
+			#include "UnityCG.cginc"
+		
+			//float4x4 _Mat;
+			sampler2D _MainTex;
+
+			float4 _MainTex_TexelSize;
+
+			struct v2f
+			{
+				float4 uv : TEXCOORD0;
+				//float2 pos : TEXCOORD1;
+				float4 vertex : SV_POSITION;
+			};
+
+			v2f vert(appdata_base v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = ComputeScreenPos(o.vertex);//float4(UnityObjectToViewPos(o.vertex).xy, 0, 0);
+				//o.uv = float4(o.vertex.xy, 0, 0);
+				return o;
+			}
+
+			float4 frag(v2f i) : SV_Target
+			{
+			return float4(1, 0, 0, 1);
+				//return float4(i.uv.xy, 0, 0);//float4(i.vertex.xy, 1, 0);
+				/*float c = tex2D(_MainTex, i.uv).a;
+				float inside = 1.0 - step(c, 0.01);
+				float4 res;
+				res.xy = i.uv;// * inside;
+				res.z = res.w = inside;
+				return res;*/
 			}
 
 			ENDCG
