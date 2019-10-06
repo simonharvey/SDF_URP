@@ -9,12 +9,17 @@ public class OutlineRenderPass : ScriptableRendererFeature
 {
     class CustomRenderPass : ScriptableRenderPass
     {
+		
+
 		OutlineRenderPass _host;
 		string m_ProfilerTag = "OutlineRenderPass CustomRenderPass";
 		private FilteringSettings m_FilteringSettings;
 		//ShaderTagId m_ShaderTagId = new ShaderTagId("DepthOnly");
 		ShaderTagId m_ShaderTagId = new ShaderTagId("UniversalForward");
 		//ShaderTagId m_ShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+
+		const int TargetRT = 5001;
+		const int SdfRT = 5002;
 
 		public CustomRenderPass(OutlineRenderPass host)
 		{
@@ -30,9 +35,11 @@ public class OutlineRenderPass : ScriptableRendererFeature
         {
 			//Debug.Log($"Configure {this}");
 			m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, _host.LayerMask);
-			cmd.GetTemporaryRT(123, cameraTextureDescriptor.width, cameraTextureDescriptor.height, 0);
+			cmd.GetTemporaryRT(TargetRT, cameraTextureDescriptor.width / _host.Downscale, cameraTextureDescriptor.height / _host.Downscale, 0);
+			cmd.GetTemporaryRT(SdfRT, cameraTextureDescriptor.width / _host.Downscale, cameraTextureDescriptor.height / _host.Downscale, 0);
+
 			ConfigureClear(ClearFlag.Color, Color.clear);
-			ConfigureTarget(123);
+			ConfigureTarget(TargetRT);
 		}
 
         // Here you can implement the rendering logic.
@@ -45,13 +52,14 @@ public class OutlineRenderPass : ScriptableRendererFeature
 
 			using (new ProfilingSample(cmd, m_ProfilerTag))
 			{
-				//context.ExecuteCommandBuffer(cmd);
-				//cmd.Clear();
+				context.ExecuteCommandBuffer(cmd);
+				cmd.Clear();
 				var cam = renderingData.cameraData;
 				var w = cam.camera.pixelWidth;
 				var h = cam.camera.pixelHeight;
 				var rtd = renderingData.cameraData.cameraTargetDescriptor;
 				rtd.depthBufferBits = 0;
+				//rtd.graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.
 				//cmd.GetTemporaryRT(123, rtd);
 
 				var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
@@ -70,7 +78,10 @@ public class OutlineRenderPass : ScriptableRendererFeature
 				context.DrawRenderers(renderingData.cullResults, ref drawSettings,
 					ref m_FilteringSettings);
 
-				cmd.SetGlobalTexture("_MainTex", 123);
+				cmd.BakeSDF(TargetRT, SdfRT);
+				cmd.SetGlobalTexture("_MainTex", SdfRT);
+				//SDF.BakeCommandBuffer()
+
 				//cmd.SetGlobalTexture("_CameraDepthNormalsTexture", depthAttachmentHandle.id);
 			}
 
@@ -95,7 +106,8 @@ public class OutlineRenderPass : ScriptableRendererFeature
         public override void FrameCleanup(CommandBuffer cmd)
         {
 			//cmd.Blit(123, 0);
-			cmd.ReleaseTemporaryRT(123);
+			cmd.ReleaseTemporaryRT(TargetRT);
+			cmd.ReleaseTemporaryRT(SdfRT);
 			//Debug.Log($"Cleanup {this}");
         }
     }
@@ -104,7 +116,10 @@ public class OutlineRenderPass : ScriptableRendererFeature
 	public RenderTexture RT;
 	public Material OutlineMat;
 
-    CustomRenderPass _drawTargetsPass;
+	[Range(1, 8)]
+	public int Downscale = 1;
+
+	CustomRenderPass _drawTargetsPass;
 	FullScreenQuadPass _fsqPass;
 
 	public override void Create()

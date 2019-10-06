@@ -42,17 +42,18 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				
-				o.uv = float4(v.texcoord.xy, 0, 0);
+				o.uv = v.texcoord;
 				return o;
 			}
 
 			float4 frag(v2f i) : SV_Target
 			{
-				float c = tex2D(_MainTex, i.uv).a;
-				float inside = 1.0 - step(c, 0.01);
+				float4 c = tex2D(_MainTex, i.uv);
+				float inside = c.a > 0;//1.0 - step(c, 0.01);
 				float4 res;
 				res.xy = i.uv;// * inside;
 				res.z = res.w = inside;
+				//res.b = .5;
 				return res;
 			}
 

@@ -24,7 +24,7 @@ public class Outline : MonoBehaviour
 		_outlineCam = go.AddComponent<Camera>();
 		//_outlineCam.depth = _cam.depth
 		_outlineCam.enabled = false;
-		_outlineCam.AddCommandBuffer(CameraEvent.AfterEverything, SDF.BakeCommandBuffer(_output, _output, 0));
+		//_outlineCam.AddCommandBuffer(CameraEvent.AfterEverything, SDF.BakeCommandBuffer(_output, _output, 0));
 		
 
 		var cmd = new CommandBuffer

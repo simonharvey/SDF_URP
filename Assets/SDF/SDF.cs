@@ -11,7 +11,7 @@ public static class SDF
 	public static RenderTexture Bake(Texture tex)
 	{
 		//var rt = RenderTexture.GetTemporary(Mathf.NextPowerOfTwo(tex.width + size), Mathf.NextPowerOfTwo(tex.height + size), 0);
-		var rt = RenderTexture.GetTemporary(tex.width, tex.height, 0, RenderTextureFormat.ARGB32);
+		var rt = RenderTexture.GetTemporary(tex.width / 4, tex.height / 4, 0, RenderTextureFormat.ARGB32);
 		rt.wrapMode = TextureWrapMode.Clamp;
 		rt.filterMode = FilterMode.Point;
 		rt.autoGenerateMips = false;
@@ -34,40 +34,49 @@ public static class SDF
 		}
 	}
 
-	public static CommandBuffer BakeCommandBuffer(Texture tex, RenderTexture output, int size)
+	public static void BakeSDF(this CommandBuffer buf, RenderTargetIdentifier src, RenderTargetIdentifier dst)
 	{
-		CommandBuffer buf = new CommandBuffer();
-		buf.name = "SDF (" + output + ")";
-		buf.BeginSample(buf.name);
-		var mat = SDFMaterial;
-
-		//var scale = new Vector2(tex.width/(float)(tex.width+size), tex.height/(float)(tex.height+size));
-		//buf.SetGlobalMatrix("_Mat", Matrix4x4.Scale(scale));
-		var src = 123;
-		var dst = 234;
-		buf.GetTemporaryRT(src, output.descriptor);
-		buf.GetTemporaryRT(dst, output.descriptor);
-		buf.SetRenderTarget(src);
-		buf.ClearRenderTarget(true, true, Color.clear);
-		buf.Blit(tex, src, mat, 0);
-
-		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
-		//Debug.Log($"off: {off}");
-		while (off > 0)
-		{
-			off >>= 1;
-			var texOff = new Vector2((float)off / output.width, off / (float)output.height);
-			buf.SetGlobalVector("_Offset", texOff);
-			buf.Blit(src, dst, mat, 1);
-			Swap(ref src, ref dst);
-		}
-
-		buf.Blit(src, output);
-		buf.ReleaseTemporaryRT(src);
-		buf.ReleaseTemporaryRT(dst);
-		buf.EndSample(buf.name);
-		return buf;
+		//buf.Blit(src, dst);
+		buf.SetGlobalTexture("_MainTex", src);
+		buf.Blit(src, dst, SDFMaterial, 1);
 	}
+
+	//public static CommandBuffer BakeCommandBuffer(RenderTargetIdentifier tex, RenderTargetIdentifier output, int size)
+	//{
+	//	CommandBuffer buf = new CommandBuffer();
+	//	buf.name = "SDF (" + output + ")";
+	//	buf.BeginSample(buf.name);
+	//	var mat = SDFMaterial;
+	//
+	//
+	//
+	//	//var scale = new Vector2(tex.width/(float)(tex.width+size), tex.height/(float)(tex.height+size));
+	//	//buf.SetGlobalMatrix("_Mat", Matrix4x4.Scale(scale));
+	//	/*var src = 123;
+	//	var dst = 234;
+	//	buf.GetTemporaryRT(src, output.descriptor);
+	//	buf.GetTemporaryRT(dst, output.descriptor);
+	//	buf.SetRenderTarget(src);
+	//	buf.ClearRenderTarget(true, true, Color.clear);
+	//	buf.Blit(tex, src, mat, 0);
+	//
+	//	var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(output.width, output.height));
+	//	//Debug.Log($"off: {off}");
+	//	while (off > 0)
+	//	{
+	//		off >>= 1;
+	//		var texOff = new Vector2((float)off / output.width, off / (float)output.height);
+	//		buf.SetGlobalVector("_Offset", texOff);
+	//		buf.Blit(src, dst, mat, 1);
+	//		Swap(ref src, ref dst);
+	//	}
+	//
+	//	buf.Blit(src, output);
+	//	buf.ReleaseTemporaryRT(src);
+	//	buf.ReleaseTemporaryRT(dst);
+	//	buf.EndSample(buf.name);*/
+	//	return buf;
+	//}
 
 	public static void BakeRT(Texture tex, RenderTexture output)
 	{
