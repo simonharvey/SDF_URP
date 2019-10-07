@@ -118,7 +118,7 @@
 				float inside = 1.0 - step(c.a, 0);
 				//return float4(o, o, 0, c.a);
 				//c.y = 1 - c.y; // what the fuck is that?
-				return float4(i.uv.xy * o, o, o);
+				return float4(i.uv.xy * o, inside, o);
 
 				//return float4(c.rg * o, inside, o);
 				//return float4(i.pos, col, o * col);
@@ -176,7 +176,7 @@
 						minDist = d;
 						closestPos.xy = v;
 						closestPos.a = 1;
-						closestPos.b = d;
+						//closestPos.b = d;
 					}
 				}
 			}
@@ -187,12 +187,13 @@
 				//float4 closestPos = float4(0, 0, 0, 0);
 				float4 closestPos = tex2D(_MainTex, origin);
 				float minDist = 1000.0;
+				float2 off = _Offset.x * _MainTex_TexelSize.xy;
 
 				for (int y=-1; y<=1; ++y)
 				{
 					for (int x=-1; x<=1; ++x)
 					{
-						Flood(origin, origin + _Offset * float2(x, y), closestPos, minDist);
+						Flood(origin, origin + off * float2(x, y), closestPos, minDist);
 					}
 				}
 
@@ -237,21 +238,26 @@
 
 			sampler2D _MainTex;	
 			float4 _MainTex_TexelSize;
-			sampler2D _SDF;
+			//sampler2D _SDF;
 
 			float4 frag(v2f i) : SV_Target
 			{
+				/*float4 c = tex2D(_MainTex, i.uv);
+				if (c.b > 0)
+				{
+					c
+				}*/
 				float inside = step(0.001, tex2D(_MainTex, i.uv).a);
-				float4 res = tex2D(_SDF, i.uv);
+				float4 res = tex2D(_MainTex, i.uv);
 				//res.b += .5;
-				if (inside)
+				/*if (inside)
 				{
 					res.b *= -1;
 					//res.b = 1 + res.b;
-				}
-
+				}*/
+				
 				res.b = res.b * .5 + .5;
-
+				
 				/*res.b *= .5;
 				if (inside)
 				{

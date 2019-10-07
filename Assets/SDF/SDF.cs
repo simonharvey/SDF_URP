@@ -34,11 +34,47 @@ public static class SDF
 		}
 	}
 
-	public static void BakeSDF(this CommandBuffer buf, RenderTargetIdentifier src, RenderTargetIdentifier dst)
+	public static int BakeSDF(this CommandBuffer buf, RenderTargetIdentifier src, int width, int height)
+	{
+		return 0;
+	}
+
+	// returns a newly allocated temporary rt with size wxh (needs to be released!)
+	public static void BakeSDF(this CommandBuffer buf, RenderTargetIdentifier src, int dst, int width, int height)
 	{
 		//buf.Blit(src, dst);
+		var tmpId = Shader.PropertyToID("BakeSDF_Internal");
+		buf.GetTemporaryRT(dst, width, height);
+		buf.GetTemporaryRT(tmpId, width, height);
+
+		var mat = SDFMaterial;
+
 		buf.SetGlobalTexture("_MainTex", src);
-		buf.Blit(src, dst, SDFMaterial, 1);
+		buf.Blit(src, dst, mat, 1); // seeding
+
+		RenderTargetIdentifier cur = dst, next = tmpId;
+		var off = (uint)Mathf.NextPowerOfTwo(Mathf.Max(width, height));
+		off >>= 1;
+
+		while (off > 0)
+		{
+			//Debug.Log($"off {off}");
+			var texOff = new Vector2(off, off);
+			buf.SetGlobalVector("_Offset", texOff);
+			buf.Blit(cur, next, mat, 2);
+
+			Swap(ref cur, ref next);
+			off >>= 1;
+		}
+
+		/*if (cur != dst)
+		{
+			buf.Blit(cur, dst);
+		}*/
+
+		buf.Blit(cur, dst, mat, 3);
+
+		buf.ReleaseTemporaryRT(tmpId);
 	}
 
 	//public static CommandBuffer BakeCommandBuffer(RenderTargetIdentifier tex, RenderTargetIdentifier output, int size)

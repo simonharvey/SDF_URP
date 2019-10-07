@@ -36,8 +36,8 @@ public class OutlineRenderPass : ScriptableRendererFeature
 			//Debug.Log($"Configure {this}");
 			m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, _host.LayerMask);
 			cmd.GetTemporaryRT(TargetRT, cameraTextureDescriptor.width / _host.Downscale, cameraTextureDescriptor.height / _host.Downscale, 0);
-			cmd.GetTemporaryRT(SdfRT, cameraTextureDescriptor.width / _host.Downscale, cameraTextureDescriptor.height / _host.Downscale, 0);
-
+			//cmd.GetTemporaryRT(SdfRT, cameraTextureDescriptor.width / _host.Downscale, cameraTextureDescriptor.height / _host.Downscale, 0);
+			
 			ConfigureClear(ClearFlag.Color, Color.clear);
 			ConfigureTarget(TargetRT);
 		}
@@ -52,8 +52,8 @@ public class OutlineRenderPass : ScriptableRendererFeature
 
 			using (new ProfilingSample(cmd, m_ProfilerTag))
 			{
-				context.ExecuteCommandBuffer(cmd);
-				cmd.Clear();
+				//context.ExecuteCommandBuffer(cmd);
+				//cmd.Clear();
 				var cam = renderingData.cameraData;
 				var w = cam.camera.pixelWidth;
 				var h = cam.camera.pixelHeight;
@@ -78,7 +78,7 @@ public class OutlineRenderPass : ScriptableRendererFeature
 				context.DrawRenderers(renderingData.cullResults, ref drawSettings,
 					ref m_FilteringSettings);
 
-				cmd.BakeSDF(TargetRT, SdfRT);
+				cmd.BakeSDF(TargetRT, SdfRT, cameraData.camera.pixelWidth, cameraData.camera.pixelHeight);
 				cmd.SetGlobalTexture("_MainTex", SdfRT);
 				//SDF.BakeCommandBuffer()
 
