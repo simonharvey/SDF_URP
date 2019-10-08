@@ -118,7 +118,7 @@
 				float inside = 1.0 - step(c.a, 0);
 				//return float4(o, o, 0, c.a);
 				//c.y = 1 - c.y; // what the fuck is that?
-				return float4(i.uv.xy * o, inside, o);
+				return float4(i.uv.xy, inside, o);
 
 				//return float4(c.rg * o, inside, o);
 				//return float4(i.pos, col, o * col);
@@ -186,7 +186,7 @@
 				float2 origin = i.uv;
 				//float4 closestPos = float4(0, 0, 0, 0);
 				float4 closestPos = tex2D(_MainTex, origin);
-				float minDist = 1000.0;
+				float minDist = 10000000000.0;
 				float2 off = _Offset.x * _MainTex_TexelSize.xy;
 
 				for (int y=-1; y<=1; ++y)
