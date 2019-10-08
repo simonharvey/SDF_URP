@@ -67,10 +67,11 @@ public static class SDF
 			off >>= 1;
 		}
 
-		/*if (cur != dst)
+		if (cur == dst)
 		{
-			buf.Blit(cur, dst);
-		}*/
+			buf.Blit(dst, cur);
+			Swap(ref cur, ref next);
+		}
 
 		buf.Blit(cur, dst, mat, 3);
 
