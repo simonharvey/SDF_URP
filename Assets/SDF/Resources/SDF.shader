@@ -247,22 +247,34 @@
 				{
 					c
 				}*/
-				float inside = step(0.001, tex2D(_MainTex, i.uv).a);
 				float4 res = tex2D(_MainTex, i.uv);
-				//res.b += .5;
-				/*if (inside)
+				float inside = res.b;
+				float d = length(i.uv - res.rg);
+				if (!inside)
 				{
-					res.b *= -1;
-					//res.b = 1 + res.b;
-				}*/
-				
-				res.b = res.b * .5 + .5;
-				
-				/*res.b *= .5;
-				if (inside)
+					//d *= -1;
+				}
+				else
 				{
-					res.b = res.b * -1 + .5; 
-				}*/
+					d = (-d);
+				}
+
+				res.b = d + .5;
+
+				////res.b += .5;
+				///*if (inside)
+				//{
+				//	res.b *= -1;
+				//	//res.b = 1 + res.b;
+				//}*/
+				//
+				//res.b = res.b * .5 + .5;
+				//
+				///*res.b *= .5;
+				//if (inside)
+				//{
+				//	res.b = res.b * -1 + .5; 
+				//}*/
 				return res;
 			}
 

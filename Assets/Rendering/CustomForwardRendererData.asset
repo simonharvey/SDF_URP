@@ -51,3 +51,4 @@ MonoBehaviour:
     m_Bits: 1024
   RT: {fileID: 8400000, guid: 05a6bf9551610cd48893589a9adc3d33, type: 2}
   OutlineMat: {fileID: 2100000, guid: a2f31a6bef0e45b4c8bc81bc37eb4964, type: 2}
+  Downscale: 1
