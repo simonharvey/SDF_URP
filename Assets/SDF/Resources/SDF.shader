@@ -170,7 +170,7 @@
 				//v.y = 1 - v.y;
 				if (v.a > 0)
 				{
-					float d = length(origin.xy - v.xy);// *_MainTex_TexelSize.zw) / _MainTex_TexelSize.zw;
+					float d = length((origin.xy - v.xy)*_MainTex_TexelSize.zw);// *_MainTex_TexelSize.zw) / _MainTex_TexelSize.zw;
 					if (d < minDist)
 					{
 						minDist = d;
@@ -249,7 +249,7 @@
 				}*/
 				float4 res = tex2D(_MainTex, i.uv);
 				float inside = res.b;
-				float d = length(i.uv - res.rg);
+				float d = length((i.uv - res.rg)*_MainTex_TexelSize.zw)*max(_MainTex_TexelSize.x, _MainTex_TexelSize.y);
 				if (!inside)
 				{
 					//d *= -1;

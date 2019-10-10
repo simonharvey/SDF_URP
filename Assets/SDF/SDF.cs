@@ -69,7 +69,7 @@ public static class SDF
 
 		if (cur == dst)
 		{
-			buf.Blit(dst, cur);
+			buf.Blit(cur, next);
 			Swap(ref cur, ref next);
 		}
 

@@ -55,8 +55,8 @@ public class OutlineRenderPass : ScriptableRendererFeature
 				//context.ExecuteCommandBuffer(cmd);
 				//cmd.Clear();
 				var cam = renderingData.cameraData;
-				var w = cam.camera.pixelWidth;
-				var h = cam.camera.pixelHeight;
+				var w = cam.camera.pixelWidth / _host.Downscale;
+				var h = cam.camera.pixelHeight / _host.Downscale;
 				var rtd = renderingData.cameraData.cameraTargetDescriptor;
 				rtd.depthBufferBits = 0;
 				//rtd.graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.
@@ -78,7 +78,7 @@ public class OutlineRenderPass : ScriptableRendererFeature
 				context.DrawRenderers(renderingData.cullResults, ref drawSettings,
 					ref m_FilteringSettings);
 
-				cmd.BakeSDF(TargetRT, SdfRT, cameraData.camera.pixelWidth, cameraData.camera.pixelHeight);
+				cmd.BakeSDF(TargetRT, SdfRT, w, h);
 				cmd.SetGlobalTexture("_MainTex", SdfRT);
 				//SDF.BakeCommandBuffer()
 
